@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -27,12 +26,17 @@ results = [['Linear',
             r2_score(y_test, linear_predictions)]]
 
 # Polynomial Regression
+models = {}
+
 for degree in [1, 2, 3, 4]:
     poly = PolynomialFeatures(degree=degree)
     X_train_poly = poly.fit_transform(X_train)
     X_test_poly = poly.transform(X_test)
+
     model = LinearRegression().fit(X_train_poly, y_train)
     predictions = model.predict(X_test_poly)
+
+    models[degree] = (poly, model)
 
     results.append([f'Degree {degree}',
                     mean_squared_error(y_test, predictions),
@@ -48,19 +52,16 @@ xs = pd.DataFrame(np.linspace(X.min().iloc[0], X.max().iloc[0], 300),
                   columns=['displacement'])
 
 plt.scatter(X, y, alpha=0.2, label='Actual Data')
-plt.plot(xs, linear_model.predict(xs), label='Degree 1')
+plt.plot(xs, linear_model.predict(xs), '-', label='Degree 1')
 
 for degree in [2, 3, 4]:
-    poly = PolynomialFeatures(degree=degree)
-    X_train_poly = poly.fit_transform(X_train)
-    model = LinearRegression().fit(X_train_poly, y_train)
+    poly, model = models[degree]
     plt.plot(xs, model.predict(poly.transform(xs)), label=f'Degree {degree}')
 
-plt.xlabel("Engine Displacement")
-plt.ylabel("MPG")
-plt.title("Polynomial Regression")
+plt.xlabel('Engine Displacement')
+plt.ylabel('Miles Per Gallon (MPG)')
+plt.title('Polynomial vs Linear Regression')
 plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
 plt.show()
-
