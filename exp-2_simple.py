@@ -1,3 +1,4 @@
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,17 +17,9 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=4
 )
 
-# Linear Regression
-linear_model = LinearRegression().fit(X_train, y_train)
-linear_predictions = linear_model.predict(X_test)
-
-results = [['Linear',
-            mean_squared_error(y_test, linear_predictions),
-            np.sqrt(mean_squared_error(y_test, linear_predictions)),
-            r2_score(y_test, linear_predictions)]]
-
 # Polynomial Regression
 models = {}
+results = []
 
 for degree in [1, 2, 3, 4]:
     poly = PolynomialFeatures(degree=degree)
@@ -52,9 +45,8 @@ xs = pd.DataFrame(np.linspace(X.min().iloc[0], X.max().iloc[0], 300),
                   columns=['displacement'])
 
 plt.scatter(X, y, alpha=0.2, label='Actual Data')
-plt.plot(xs, linear_model.predict(xs), '-', label='Degree 1')
 
-for degree in [2, 3, 4]:
+for degree in [1, 2, 3, 4]:
     poly, model = models[degree]
     plt.plot(xs, model.predict(poly.transform(xs)), label=f'Degree {degree}')
 
@@ -65,3 +57,4 @@ plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
 plt.show()
+
