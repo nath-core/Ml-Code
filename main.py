@@ -1,59 +1,45 @@
-
+from unittest import result
+import time
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.datasets import load_diabetes,fetch_openml,load_iris
 import matplotlib.pyplot as plt
+from sklearn.externals.array_api_compat.torch import meshgrid
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression,RidgeCV,LassoCV,LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import PolynomialFeatures,StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.tree import DecisionTreeClassifier,plot_tree
 
-# Load dataset
-data = pd.read_csv('auto-mpg-dataset.csv').dropna(subset=['displacement', 'mpg'])
-X = data[['displacement']]
-y = data['mpg']
+iris =load_iris()
+x = iris.data[:,2:4]
+y = (iris.target==0).astype(int)
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=4
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.3,random_state=7)
+
+scalar = StandardScaler()
+x_train_s = scalar.fit_transform(x_train)
+x_test_s = scalar.transform(x_test)
+
+model = SVC(kernel='linear',C=1.0)
+model.fit(x_train_s,y_train)
+prediction = model.predict(x_test_s)
+
+plt.scatter(x[:,0],x[:,1],c=y,cmap='coolwarm')
+
+xx,yy = meshgrid(
+    np.linspace(x[:,0].min()-0.5,x[:,0].max()+0.5,300),
+    np.linspace(x[:,1].min()-0.5,x[:,1].max()+0.5,300)
 )
+grid = scalar.transform(np.c_[xx.ravel(),yy.ravel()])
+z = model.decision_function(grid).reshape(xx.shape)
 
-# Polynomial Regression
-models = {}
-results = []
+plt.contour(xx,yy,z,levels=[-1,0,1],colors ='black',linestyles)
 
-for degree in [1, 2, 3, 4]:
-    poly = PolynomialFeatures(degree=degree)
-    X_train_poly = poly.fit_transform(X_train)
-    X_test_poly = poly.transform(X_test)
+sv = scalar.inverse_transform(model.support_vectors_)
+plt.scatter(sv[:,0],sv[:,1],s=120,facecolor='none',edgecolor='black')
 
-    model = LinearRegression().fit(X_train_poly, y_train)
-    predictions = model.predict(X_test_poly)
 
-    models[degree] = (poly, model)
 
-    results.append([f'Degree {degree}',
-                    mean_squared_error(y_test, predictions),
-                    np.sqrt(mean_squared_error(y_test, predictions)),
-                    r2_score(y_test, predictions)])
-
-# Display results
-results_df = pd.DataFrame(results, columns=['Model', 'MSE', 'RMSE', 'R2'])
-print(results_df.round(3))
-
-# Regression graph
-xs = pd.DataFrame(np.linspace(X.min().iloc[0], X.max().iloc[0], 300),
-                  columns=['displacement'])
-
-plt.scatter(X, y, alpha=0.2, label='Actual Data')
-
-for degree in [1, 2, 3, 4]:
-    poly, model = models[degree]
-    plt.plot(xs, model.predict(poly.transform(xs)), label=f'Degree {degree}')
-
-plt.xlabel('Engine Displacement')
-plt.ylabel('Miles Per Gallon (MPG)')
-plt.title('Polynomial vs Linear Regression')
-plt.legend()
-plt.grid(alpha=0.3)
-plt.tight_layout()
-plt.show()
