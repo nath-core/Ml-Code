@@ -1,50 +1,54 @@
-import numpy as np
-from matplotlib import pyplot as plt
+
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score,precision_score,recall_score,f1_score,confusion_matrix
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-iris = load_iris()
-x = iris.data[:,2:4]
-y = (iris.target == 0).astype(int)
+# Load dataset
+url = 'pima-indians-diabetes-data.csv'
+data = pd.read_csv(url)
 
-x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2,random_state=42,stratify=y)
+# Features and target
+x = data.iloc[:, :-1]
+y = data.iloc[:, -1]
 
-scaler = StandardScaler()
-x_train_s = scaler.fit_transform(x_train)
-x_test_s = scaler.transform(x_test)
-
-model = SVC(kernel='linear',C=1.0)
-model.fit(x_train_s,y_train)
-pred = model.predict(x_test_s)
-
-print("Accuray: ",round (accuracy_score(y_test,pred),4))
-print("Precsion: ",round (precision_score(y_test,pred),4))
-print("F1: ",round (f1_score(y_test,pred),4))
-print("Recall: ",round (recall_score(y_test,pred),4))
-print("Confusion Matrix \n: ",confusion_matrix(y_test,pred))
-
-plt.figure(figsize=(10,7))
-plt.scatter(x[:, 0], x[:, 1], c=y, cmap='rainbow')
-
-xx,yy = np.meshgrid(
-    np.linspace(x[:,0].min() - 0.5,x[:,0].max() + 0.5,300),
-    np.linspace(x[:,1].min() - 0.5,x[:,1].max() + 0.5,300)
+# Split data
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y, test_size=0.3, random_state=42
 )
-grid = scaler.transform(np.c_[xx.ravel(),yy.ravel()])
-z = model.decision_function(grid).reshape(xx.shape)
 
-plt.contour(xx,yy,z,levels=[-1,0,1],colors='black',linestyles=['--','-','-'])
+# Without scaling
+unscaled_model = LogisticRegression(solver='liblinear', max_iter=1000)
+unscaled_model.fit(x_train, y_train)
+unscaled_predictions = unscaled_model.predict(x_test)
 
-sv = scaler.inverse_transform(model.support_vectors_)
-plt.scatter(sv[:,0],sv[:,1],s=120,facecolors='none',edgecolors='black',label='Support vector')
+# With scaling
+scaler = StandardScaler()
+x_train_scaled = scaler.fit_transform(x_train)
+x_test_scaled = scaler.transform(x_test)
+scaled_model = LogisticRegression(solver='liblinear', max_iter=1000)
+scaled_model.fit(x_train_scaled, y_train)
+scaled_predictions = scaled_model.predict(x_test_scaled)
 
-plt.xlabel('Petal length')
-plt.ylabel('Petal width')
-plt.title('Support Vector Machine')
-plt.legend()
-plt.tight_layout()
+# Compare metrics
+for model_name, predictions in [
+    ('Without Scaling', unscaled_predictions),
+    ('With Scaling', scaled_predictions)
+]:
+    print(model_name,
+          'Accuracy:', round(accuracy_score(y_test, predictions), 3),
+          'Precision:', round(precision_score(y_test, predictions), 3),
+          'Recall:', round(recall_score(y_test, predictions), 3),
+          'F1:', round(f1_score(y_test, predictions), 3))
+
+# Accuracy comparison graph
+plt.bar(
+    x=["Without Scaling", "With Scaling"],
+    height=[accuracy_score(y_test, unscaled_predictions),
+            accuracy_score(y_test, scaled_predictions)]
+)
+plt.ylabel("Accuracy")
+plt.title("Logistic Regression")
 plt.show()
