@@ -39,6 +39,9 @@ plt.figure(figsize=(8, 6))
 plt.scatter(X[y == 1, 0], X[y == 1, 1], c='red', label='Setosa')
 plt.scatter(X[y == 0, 0], X[y == 0, 1], c='blue', label='Non-Setosa')
 
+#plt.scatter(x[:, 0], x[:, 1], c=y, cmap='rainbow')
+
+
 # Generate grid in original feature scale, then scale it
 xx, yy = np.meshgrid(
     np.linspace(X[:, 0].min() - 0.5, X[:, 0].max() + 0.5, 300),
