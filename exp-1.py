@@ -59,7 +59,7 @@ figure, axes = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
 for axis, (name, t0, t1) in zip(axes, models):
     axis.scatter(X_test.ravel(), y_test, s=8, alpha=0.4, label='Data')
     axis.plot(X_values, t0 + t1 * X_values, color='red', linewidth=2, label='Fitted Line')
-    axis.set_title(name)
+    axis.set_title('Regression')
     axis.set_xlabel('Average Rooms (Scaled)')
     axis.set_ylabel('Median House Value')
     axis.legend()

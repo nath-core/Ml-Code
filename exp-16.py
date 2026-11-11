@@ -35,7 +35,7 @@ centroids = scaler.inverse_transform(kmeans.cluster_centers_)
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
 # K-Means plot
-ax1.scatter(X[:, 0], X[:, 1], c=y_means, cmap="viridis", s=50)
+ax1.scatter(X[:, 0], X[:, 1], c=y_means, cmap="coolwarm", s=50)
 ax1.scatter(centroids[:, 0], centroids[:, 1],
             c="red", marker="X", s=150, label="Centroids")
 ax1.set_title("K-Means Clustering (K=5)")
@@ -45,7 +45,7 @@ ax1.legend()
 ax1.grid(True, alpha=0.3)
 
 # Agglomerative plot
-ax2.scatter(X[:, 0], X[:, 1], c=y_hc, cmap="viridis", s=50)
+ax2.scatter(X[:, 0], X[:, 1], c=y_hc, cmap="coolwarm", s=50)
 ax2.set_title("Agglomerative Clustering (K=5)")
 ax2.set_xlabel("Annual Income (k$)")
 ax2.set_ylabel("Spending Score (1-100)")

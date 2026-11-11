@@ -48,3 +48,13 @@ for name, model in models:
 # Display results
 results_df = pd.DataFrame(results, columns=['Kernel', 'Accuracy', 'Precision', 'Recall', 'F1', 'Train Time (s)'])
 print(results_df)
+
+# Bar Plot
+names = results_df['Kernel']
+scores = results_df['Accuracy']
+
+plt.bar(names, scores)
+plt.xlabel('SVM Kernel')
+plt.ylabel('Accuracy')
+plt.title('SVM Kernel Comparison')
+plt.show()

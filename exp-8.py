@@ -53,18 +53,11 @@ results_df = pd.DataFrame(results)
 print('\nHyperparameter Performance Summary Table:\n')
 print(results_df.to_string(index=False))
 
-fig, ax1 = plt.subplots(figsize=(8, 4))
-color = 'tab:blue'
-ax1.set_xlabel('Hyperparameter Value (K)')
-ax1.set_ylabel('Test Accuracy Score', color=color)
-ax1.plot(results_df['K-Value'], results_df['Accuracy'], marker='o', color=color, linewidth=2)
-ax1.tick_params(axis='y', labelcolor=color)
-ax2 = ax1.twinx()
-color = 'tab:red'
-ax2.set_ylabel('Inference Delay Time (Seconds)', color=color)
-ax2.plot(results_df['K-Value'], results_df['Inference Latency (s)'], marker='s', color=color,
-linestyle='--')
-ax2.tick_params(axis='y', labelcolor=color)
-plt.title('KNN Parameter Grid Search Analysis: Accuracy vs. Efficiency')
-fig.tight_layout()
+# Graph
+plt.plot(results_df['K-Value'], results_df['Accuracy'], marker='o', label='Accuracy')
+plt.plot(results_df['K-Value'], results_df['Inference Latency (s)'], marker='s', label='Inference Time')
+plt.xlabel('K-Value')
+plt.title('KNN Performance Comparison')
+plt.legend()
+plt.grid()
 plt.show()

@@ -35,11 +35,11 @@ print("F1-Score:", round(f1_score(y_test, pred), 4))
 print("Confusion Matrix:  \n", confusion_matrix(y_test, pred))
 
 # 6. Plot decision boundary and margins
-plt.figure(figsize=(8, 6))
-plt.scatter(X[y == 1, 0], X[y == 1, 1], c='red', label='Setosa')
-plt.scatter(X[y == 0, 0], X[y == 0, 1], c='blue', label='Non-Setosa')
+#plt.figure(figsize=(8, 6))
+#plt.scatter(X[y == 1, 0], X[y == 1, 1], c='red', label='Setosa')
+#plt.scatter(X[y == 0, 0], X[y == 0, 1], c='blue', label='Non-Setosa')
 
-#plt.scatter(x[:, 0], x[:, 1], c=y, cmap='rainbow')
+plt.scatter(x[:, 0], x[:, 1], c=y, cmap='rainbow')
 
 
 # Generate grid in original feature scale, then scale it

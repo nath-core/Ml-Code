@@ -1,27 +1,63 @@
+import time
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, f1_score
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier,plot_tree
-from sklearn.metrics import accuracy_score
-from sklearn.cluster import KMeans
+# 1. Download and load data using PyTorch
+mnist = fetch_openml('Fashion-MNIST', version=1, as_frame=False,parser='auto')
+X = mnist.data
+y = mnist.target.astype(int)
 
-data = pd.read_csv("online-retail.csv" , encoding="ISO-8859-1")
+# 2. Downsample for speed (Optional, but highly recommended for KNN)
+# KNN has O(N) prediction time. Evaluating all 70k samples takes massive CPU memory/time.
+# We will use 10,000 samples for training and 2,000 for testing.
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, train_size=10000, test_size=2000, random_state=42, stratify=y
+)
 
-x= data.select_dtypes(include="number")
-x = x.fillna(x.mean())
+# Adjust these values based on your computer's processing power
+train_subset_size = 15000
+test_subset_size = 1500
 
-kmeans = KMeans(n_clusters=5,random_state=42)
-y = kmeans.fit_predict(x)
+X_train_sub = X_train[:train_subset_size] / 255.0
+y_train_sub = y_train[:train_subset_size]
+X_test_sub = X_test[:test_subset_size] / 255.0
+y_test_sub = y_test[:test_subset_size]
+k_values = [1, 3, 5, 11]
+results = []
+for k in k_values:
+    # Initialize classifier (using all CPU cores via n_jobs=-1)
+    knn = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
+    knn.fit(X_train_sub, y_train_sub)
 
-x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.3,random_state=42)
+    # Measure inference latency explicitly during prediction
+    start_time = time.time()
+    y_pred = knn.predict(X_test_sub)
+    end_time = time.time()
 
-model = DecisionTreeClassifier(criterion="entropy",random_state=42)
-model.fit(x_train,y_train)
-y_pred = model.predict(x_test)
+    # Calculate performance metrics
+    acc = accuracy_score(y_test_sub, y_pred)
+    f1 = f1_score(y_test_sub, y_pred, average='macro')
+    test_time = end_time - start_time
 
-print("Accurcay: ",accuracy_score(y_test,y_pred))
-print("Feature importance: ",model.feature_importances_)
+    # Append structured dictionary to results list
+    results.append({
+        'K-Value': k,
+        'Accuracy': acc,
+        'Macro F1-Score': f1,
+        'Inference Latency (s)': test_time
+    })
+results_df = pd.DataFrame(results)
+print('\nHyperparameter Performance Summary Table:\n')
+print(results_df.to_string(index=False))
 
-plt.figure(figsize=(10,7))
-plot_tree(model,filled=True,feature_names = x.columns,rounded=True,fontsize=10)
+# Graph
+plt.plot(results_df['K-Value'], results_df['Accuracy'], marker='o', label='Accuracy')
+plt.plot(results_df['K-Value'], results_df['Inference Latency (s)'], marker='s', label='Inference Time')
+plt.xlabel('K-Value')
+plt.title('KNN Performance Comparison')
+plt.legend()
+plt.grid()
 plt.show()
